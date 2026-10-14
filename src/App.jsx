@@ -9,10 +9,23 @@ import {
 } from 'framer-motion'
 import { ArrowDown, ArrowLeft, ArrowUpRight, Github, Menu, MoveRight, Play, X } from 'lucide-react'
 import { filters, projects } from './projects.js'
+import optimizedMedia from './optimizedMedia.json'
 
 const ease = [0.22, 1, 0.36, 1]
-const mediaVersion = '20261014-1'
-const mediaUrl = (src) => src?.startsWith('/media/') ? `${src}?v=${mediaVersion}` : src
+const mediaUrl = (src) => optimizedMedia.videos[src] || optimizedMedia.images[src]?.variants.at(-1)?.src || src
+
+function MediaImage({ src, sizes = '(max-width: 820px) 100vw, 70vw', ...props }) {
+  const data = optimizedMedia.images[src]
+  if (!data) return <img src={src} {...props} />
+  return <img
+    src={data.variants.at(-1).src}
+    srcSet={data.variants.map((variant) => `${variant.src} ${variant.width}w`).join(', ')}
+    sizes={sizes}
+    width={data.width}
+    height={data.height}
+    {...props}
+  />
+}
 
 function SplitText({ children, delay = 0 }) {
   return (
@@ -70,7 +83,7 @@ function Artwork({ project, compact = false, variant = 'gallery' }) {
         style={{ '--accent': project.accent, '--dark': project.dark }}
         aria-label={`${project.titleEn} image cover`}
       >
-        <img src={mediaUrl(project.coverImage)} alt={`${project.titleZh} / ${project.titleEn}`} />
+        <MediaImage src={project.coverImage} sizes="(max-width: 820px) 100vw, 50vw" alt={`${project.titleZh} / ${project.titleEn}`} loading="lazy" />
         <div className="video-cover__veil" />
         <span className="video-cover__index">{project.index}</span>
         <span className="video-cover__label">COVER / {project.titleEn}</span>
@@ -102,7 +115,7 @@ function ProjectMedia({ item, index }) {
       {item.type === 'video' ? (
         <video src={mediaUrl(item.src)} poster={mediaUrl(item.poster)} controls playsInline preload="metadata" />
       ) : (
-        <img src={mediaUrl(item.src)} alt={`${item.label} / ${item.labelEn}`} loading="lazy" />
+        <MediaImage src={item.src} alt={`${item.label} / ${item.labelEn}`} loading="lazy" />
       )}
       <figcaption>
         <span>{String(index + 1).padStart(2, '0')}</span>
@@ -242,7 +255,7 @@ function DustCase({ project }) {
   return (
     <div className="dust-case">
       <section className="dust-intro">
-        <div className="dust-intro__cover"><img src={mediaUrl(content.media.cover)} alt={`${content.headlineZh} exhibition cover`} /></div>
+        <div className="dust-intro__cover"><MediaImage src={content.media.cover} alt={`${content.headlineZh} exhibition cover`} /></div>
         <div className="dust-intro__copy">
           <Bilingual zh={content.headlineZh} en={content.headlineEn} />
           <Bilingual zh={content.subheadZh} en={content.subheadEn} />
@@ -260,7 +273,7 @@ function DustCase({ project }) {
       <section className="dust-hall dust-hall--moss">
         <DustHeading hall={hall01} />
         <div className="dust-hall__copy"><CaseParagraphs items={hall01.paragraphs} /><blockquote><p>{hall01.quoteZh}</p><p>{hall01.quoteEn}</p></blockquote></div>
-        <figure className="dust-wide-image"><img src={mediaUrl(content.media.hall01)} alt="Exhibition Hall 1 damage analysis" /><figcaption>HALL 01 / DAMAGE ATLAS</figcaption></figure>
+        <figure className="dust-wide-image"><MediaImage src={content.media.hall01} alt="Exhibition Hall 1 damage analysis" loading="lazy" /><figcaption>HALL 01 / DAMAGE ATLAS</figcaption></figure>
       </section>
 
       <section className="dust-hall dust-hall--paper">
@@ -270,21 +283,21 @@ function DustCase({ project }) {
           {hall02.characters.map((character, index) => (
             <article className="dust-character" key={character.nameZh} tabIndex="0">
               <div className="dust-character__visual">
-                <img className="dust-character__front" src={mediaUrl(content.media.characters[index].front)} alt={`${character.nameZh} character`} />
-                <img className="dust-character__back" src={mediaUrl(content.media.characters[index].back)} alt={`${character.nameZh} tool description`} />
+                <MediaImage className="dust-character__front" src={content.media.characters[index].front} alt={`${character.nameZh} character`} loading="lazy" />
+                <MediaImage className="dust-character__back" src={content.media.characters[index].back} alt={`${character.nameZh} tool description`} loading="lazy" />
               </div>
               <div className="dust-character__caption"><span>{String(index + 1).padStart(2, '0')}</span><div><Bilingual zh={character.nameZh} en={character.nameEn} /><Bilingual zh={character.descZh} en={character.descEn} /></div></div>
             </article>
           ))}
         </div>
-        <figure className="dust-wide-image dust-wide-image--light"><img src={mediaUrl(content.media.arSystem)} alt="AR interaction system for restoration tool characters" /><figcaption>AR INTERACTION / TECHNICAL SYSTEM</figcaption></figure>
+        <figure className="dust-wide-image dust-wide-image--light"><MediaImage src={content.media.arSystem} alt="AR interaction system for restoration tool characters" loading="lazy" /><figcaption>AR INTERACTION / TECHNICAL SYSTEM</figcaption></figure>
       </section>
 
       <section className="dust-hall dust-hall--smoke">
         <DustHeading hall={hall03} />
         <CaseParagraphs items={hall03.paragraphs} />
         <DustVideo src={content.media.restorerVideo} poster={content.media.restorerPoster} zh="修画人的千年独白" en="A Restorer’s Dialogue Across Time" />
-        <div className="dust-process-grid">{content.media.hall03Images.map((src, index) => <figure key={src}><img src={mediaUrl(src)} alt={`Restoration narrative scene ${index + 1}`} loading="lazy" /><figcaption>SCENE {String(index + 1).padStart(2, '0')}</figcaption></figure>)}</div>
+        <div className="dust-process-grid">{content.media.hall03Images.map((src, index) => <figure key={src}><MediaImage src={src} alt={`Restoration narrative scene ${index + 1}`} loading="lazy" /><figcaption>SCENE {String(index + 1).padStart(2, '0')}</figcaption></figure>)}</div>
       </section>
 
       <section className="dust-hall dust-hall--blue">
@@ -447,7 +460,7 @@ function SpatialArchive({ project }) {
         <section className="spatial-study" key={study.number}>
           <div className="spatial-study__heading"><span>{study.number} / 03</span><div><h3>{study.title}</h3><p>{study.en}</p></div><p lang="zh-CN">{study.description}</p></div>
           <div className="spatial-study__images">
-            {study.images.map((src, index) => <figure key={src}><img src={mediaUrl(src)} alt={`${study.title} · 图 ${index + 1}`} loading="lazy" /><figcaption>{study.title} / {String(index + 1).padStart(2, '0')}</figcaption></figure>)}
+            {study.images.map((src, index) => <figure key={src}><MediaImage src={src} alt={`${study.title} · 图 ${index + 1}`} loading="lazy" /><figcaption>{study.title} / {String(index + 1).padStart(2, '0')}</figcaption></figure>)}
           </div>
         </section>
       ))}
@@ -496,7 +509,7 @@ function FilmArchive({ project }) {
         <div className="film-archive__sprockets" aria-hidden="true" />
         <div className="film-archive__strip" ref={stripRef} onScroll={updateActive} tabIndex={0} onKeyDown={(event) => { if (event.key === 'ArrowRight') { event.preventDefault(); goTo(active + 1) } if (event.key === 'ArrowLeft') { event.preventDefault(); goTo(active - 1) } }}>
           {frames.map((frame, index) => <figure className="film-frame" key={frame.src}>
-            <div className="film-frame__image"><img src={mediaUrl(frame.src)} alt={frame.label} loading={index < 2 ? 'eager' : 'lazy'} /></div>
+            <div className="film-frame__image">{Math.abs(index - active) <= 1 && <MediaImage src={frame.src} alt={frame.label} sizes="(max-width: 820px) 84vw, 820px" />}</div>
             <figcaption><span>{String(index + 1).padStart(2, '0')}</span><strong>{frame.label}</strong><small>{frame.note}</small></figcaption>
           </figure>)}
         </div>
@@ -531,7 +544,7 @@ function GraphicArchive({ project }) {
             onClick={() => choose(index)}
           >
             <span className="graphic-archive__number">{String(index + 1).padStart(2, '0')}</span>
-            <span className="graphic-archive__thumb"><img src={mediaUrl(item.src)} alt="" loading="lazy" /></span>
+            <span className="graphic-archive__thumb">{Math.abs(index - active) <= 1 && <MediaImage src={item.src} sizes="64px" alt="" />}</span>
             <span className="graphic-archive__item-copy"><strong>{item.label}</strong><small>{item.note}</small></span>
             <ArrowUpRight size={16} aria-hidden="true" />
           </button>)}
@@ -540,7 +553,7 @@ function GraphicArchive({ project }) {
           <div className="graphic-archive__stage">
             <AnimatePresence mode="wait">
               <motion.figure key={frame.src} initial={{ opacity: 0, y: 28, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -22, scale: .98 }} transition={{ duration: .45, ease }}>
-                <img src={mediaUrl(frame.src)} alt={frame.label} />
+                <MediaImage src={frame.src} sizes="(max-width: 820px) 90vw, 900px" alt={frame.label} />
               </motion.figure>
             </AnimatePresence>
           </div>
