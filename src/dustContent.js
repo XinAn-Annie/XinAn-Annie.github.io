@@ -66,7 +66,7 @@ export const dustCase = {
     hall01: '/media/dust-remains/hall-01-damage-overview.png',
     arSystem: '/media/dust-remains/hall-02-ar-system.png',
     characters: Array.from({ length: 6 }, (_, index) => ({ front: `/media/dust-remains/hall-02-character-${index + 1}-front.png`, back: `/media/dust-remains/hall-02-character-${index + 1}-back.png` })),
-    hall03Images: [1, 2, 3, 4, 5, 6].map((index) => `/media/dust-remains/hall-03-process-${index}.${index === 3 || index === 4 || index === 5 ? 'jpg' : 'png'}`),
+    hall03Images: [6, 1, 2, 3, 4, 5].map((index) => `/media/dust-remains/hall-03-process-${index}.${index === 3 || index === 4 || index === 5 ? 'jpg' : 'png'}`),
     restorerVideo: '/media/dust-remains/hall-03-restorer-story.mp4', restorerPoster: '/media/dust-remains/hall-03-restorer-story-poster.jpg',
     hall04Video: '/media/dust-remains/hall-04-digital-restoration.mp4', hall04Poster: '/media/dust-remains/hall-04-digital-restoration-poster.jpg',
   },

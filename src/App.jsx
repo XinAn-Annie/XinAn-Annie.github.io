@@ -297,7 +297,7 @@ function DustCase({ project }) {
         <DustHeading hall={hall03} />
         <CaseParagraphs items={hall03.paragraphs} />
         <DustVideo src={content.media.restorerVideo} poster={content.media.restorerPoster} zh="修画人的千年独白" en="A Restorer’s Dialogue Across Time" />
-        <div className="dust-process-grid">{content.media.hall03Images.map((src, index) => <figure key={src}><MediaImage src={src} alt={`Restoration narrative scene ${index + 1}`} loading="lazy" /><figcaption>SCENE {String(index + 1).padStart(2, '0')}</figcaption></figure>)}</div>
+        <div className="dust-process-grid">{content.media.hall03Images.map((src, index) => <figure key={src}><div className="dust-process-grid__media"><MediaImage src={src} alt={`Restoration narrative scene ${index + 1}`} /></div><figcaption>SCENE {String(index + 1).padStart(2, '0')}</figcaption></figure>)}</div>
       </section>
 
       <section className="dust-hall dust-hall--blue">
