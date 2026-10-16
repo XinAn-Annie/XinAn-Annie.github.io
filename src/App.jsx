@@ -27,6 +27,19 @@ function MediaImage({ src, sizes = '(max-width: 820px) 100vw, 70vw', ...props })
   />
 }
 
+function ResponsivePicture({ src, sizes, ...props }) {
+  const data = optimizedMedia.images[src]
+  if (!data) return <img src={src} {...props} />
+  const srcSet = (variants) => variants?.map((variant) => `${variant.src} ${variant.width}w`).join(', ')
+  return (
+    <picture>
+      {data.avifVariants?.length > 0 && <source type="image/avif" srcSet={srcSet(data.avifVariants)} sizes={sizes} />}
+      <source type="image/webp" srcSet={srcSet(data.variants)} sizes={sizes} />
+      <img src={data.variants.at(-1).src} width={data.width} height={data.height} {...props} />
+    </picture>
+  )
+}
+
 function SplitText({ children, delay = 0 }) {
   return (
     <span className="split-line">
@@ -153,10 +166,13 @@ function XiangmaiHeading({ code, titleZh, titleEn, headingZh, headingEn }) {
 
 function XiangmaiCase({ project }) {
   const content = project.caseStudy
-  const arPlaceholders = [
-    { key: 'map', zh: 'AR 导览地图', en: 'AR Guide Map', wide: true },
-    ...content.ar.locations.map(([zh, en]) => ({ key: `scene-${zh}`, zh: `${zh} AR 导览`, en: `${en} AR Guide` })),
-    ...content.ar.locations.map(([zh, en]) => ({ key: `ip-${zh}`, zh: `${zh} IP 形象`, en: `${en} IP Character` })),
+  const arMedia = [
+    ['/media/xiangmai/ar/01-sisters-pavilion.png', '/media/xiangmai/ar/01-fermented-rice-bun-ip.png'],
+    ['/media/xiangmai/ar/02-wenbi-peak.png', '/media/xiangmai/ar/02-torreya-ip.png'],
+    ['/media/xiangmai/ar/03-jixian-hall.png', '/media/xiangmai/ar/03-sweet-potato-starch-ip.png'],
+    ['/media/xiangmai/ar/04-shen-ancestral-hall.png', '/media/xiangmai/ar/04-changpo-tofu-ip.png'],
+    ['/media/xiangmai/ar/05-shi-jianwu-hometown.png', '/media/xiangmai/ar/05-rice-ip.png'],
+    ['/media/xiangmai/ar/06-zhuomu-workshop.png', '/media/xiangmai/ar/06-kiwifruit-ip.png'],
   ]
 
   return (
@@ -214,9 +230,27 @@ function XiangmaiCase({ project }) {
           <div className="xiangmai-location-table__head"><span>文化空间 / Cultural Site</span><span>对应文化产品 / Cultural Product</span></div>
           {content.ar.locations.map(([siteZh, siteEn, productZh, productEn], index) => <div key={siteZh}><span>{String(index + 1).padStart(2, '0')}</span><Bilingual zh={siteZh} en={siteEn} /><Bilingual zh={productZh} en={productEn} /></div>)}
         </div>
-        <div className="xiangmai-placeholder-head"><span>AR IMAGE ARCHIVE</span><p>1 MAP + 6 AR GUIDES + 6 IP CHARACTERS</p></div>
-        <div className="xiangmai-placeholders">
-          {arPlaceholders.map((item, index) => <div className={item.wide ? 'xiangmai-placeholder xiangmai-placeholder--wide' : 'xiangmai-placeholder'} key={item.key}><span>IMAGE {String(index + 1).padStart(2, '0')}</span><div>+</div><Bilingual zh={item.zh} en={item.en} /></div>)}
+        <div className="xiangmai-placeholder-head"><span>AR IMAGE ARCHIVE</span><p>1 MAP + 6 CULTURAL SITES + 6 IP CHARACTERS</p></div>
+        <figure className="xiangmai-ar-map">
+          <ResponsivePicture src="/media/xiangmai/ar/ar-guide-map.png" sizes="(max-width: 820px) 100vw, 90vw" alt="乡脉智绘 AR 导览地图" loading="lazy" />
+          <figcaption><span>00 / MAP</span><Bilingual zh="文村 AR 导览地图" en="Wencun AR Guide Map" /></figcaption>
+        </figure>
+        <div className="xiangmai-ar-pairs">
+          {content.ar.locations.map(([siteZh, siteEn, productZh, productEn], index) => (
+            <article className="xiangmai-ar-pair" key={siteZh}>
+              <div className="xiangmai-ar-pair__media">
+                <figure>
+                  <ResponsivePicture src={arMedia[index][0]} sizes="(max-width: 820px) 58vw, 30vw" alt={`${siteZh} AR 场景预览`} loading="lazy" />
+                  <span>AR GUIDE</span>
+                </figure>
+                <figure>
+                  <ResponsivePicture src={arMedia[index][1]} sizes="(max-width: 820px) 38vw, 18vw" alt={`${productZh} IP 形象`} loading="lazy" />
+                  <span>IP CHARACTER</span>
+                </figure>
+              </div>
+              <div className="xiangmai-ar-pair__caption"><span>{String(index + 1).padStart(2, '0')}</span><Bilingual zh={`${siteZh} × ${productZh}`} en={`${siteEn} × ${productEn}`} /></div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -764,16 +798,93 @@ function App() {
         </section>
 
         <section className="about section" id="about">
-          <span className="section-code">03 / ABOUT</span>
-          <div className="about__grid">
-            <Reveal><h2>I build bridges<br />between <em>tradition</em><br />and new tools.</h2></Reveal>
-            <Reveal delay={0.12} className="about__copy">
-              <p>I’m An Xin, an Art & Technology student at Zhejiang University. My work spans interaction design, creative coding, visual communication and material HCI.</p>
-              <p lang="zh-CN">我是安馨，关注如何让技术、文化与人的真实体验发生联系，并将复杂系统转化为清晰、有温度、可以被体验的设计。</p>
-              <div className="about__facts"><span>BASED IN HANGZHOU</span><span>ART × TECH</span><span>AVAILABLE FOR CONVERSATIONS</span></div>
+          <article className="about-page about-page--profile">
+            <div className="about-page__masthead">
+              <span className="section-code">03 / ABOUT ME</span>
+              <span>PAGE 01 / 02 · PERSONAL</span>
+            </div>
+
+            <Reveal className="about-profile__title">
+              <p>HELLO, I’M</p>
+              <h2>AN <em>XIN.</em></h2>
             </Reveal>
-          </div>
-          <div className="about__portrait" aria-label="Portrait image placeholder"><span>PORTRAIT<br />PLACEHOLDER</span><small>个人照片占位 / 4:5</small></div>
+
+            <Reveal delay={0.08} className="about-profile__photo">
+              <img src="/media/about/an-xin-cutout.png" alt="安馨的个人生活照" width="750" height="937" />
+            </Reveal>
+
+            <Reveal delay={0.12} className="about-profile__intro" lang="zh-CN">
+              <span>PROFILE / 基本信息</span>
+              <h3>艺术与科技学生<br />也是好奇心驱动的设计实践者。</h3>
+              <dl>
+                <div><dt>姓名</dt><dd>安馨</dd></div>
+                <div><dt>年龄</dt><dd>20 岁</dd></div>
+                <div><dt>就读</dt><dd>浙江大学艺术与科技</dd></div>
+                <div><dt>辅修</dt><dd>竺可桢学院创新创业管理强化班</dd></div>
+              </dl>
+            </Reveal>
+
+            <Reveal delay={0.18} className="about-profile__hobbies" lang="zh-CN">
+              <span>OFF THE CLOCK / 兴趣爱好</span>
+              <ul aria-label="兴趣爱好">
+                <li>猫咪脑袋 <i>ฅ^•ﻌ•^ฅ</i></li>
+                <li>摄影</li>
+                <li>旅行</li>
+                <li>爬山</li>
+                <li>骑行</li>
+                <li>热爱生活</li>
+              </ul>
+            </Reveal>
+
+            <p className="about-page__scribble" aria-hidden="true">curious by default!</p>
+          </article>
+
+          <article className="about-page about-page--cv">
+            <div className="about-page__masthead">
+              <span>HONORS + SKILLS</span>
+              <span>PAGE 02 / 02 · CV</span>
+            </div>
+
+            <Reveal className="about-cv__heading">
+              <span>WHAT I’VE EARNED &amp; LEARNED</span>
+              <h3>Honors <em>&amp;</em><br />toolbox.</h3>
+            </Reveal>
+
+            <div className="about-cv__columns">
+              <section className="about-cv__honors" lang="zh-CN">
+                <Reveal className="about-cv__label"><span>01</span><h4>荣誉与奖项</h4></Reveal>
+                {[
+                  ['2024—2026', '国家奖学金 · 浙江大学一等奖学金', '连续两学年获得'],
+                  ['2024—2026', '优秀学生 · 学业优秀标兵 · 创新创业标兵', '含优秀团员、社会工作标兵、劳动实践标兵'],
+                  ['2025', '“文化之光”项目优秀通讯员', '寒假社会实践'],
+                  ['2025.12', '浙江省大学生运动会徽标设计', '三等奖 · 唯一负责人'],
+                  ['2026.04', '蒲公英大学生创新大赛', '三等奖 · 第一负责人'],
+                  ['2026.06', '浙江省大学生广告大赛 H5 游戏设计', '三等奖 · 第一负责人'],
+                ].map(([year, title, meta], index) => (
+                  <Reveal delay={index * 0.035} className="about-cv__honor" key={`${year}-${title}`}>
+                    <time>{year}</time><div><h5>{title}</h5><p>{meta}</p></div>
+                  </Reveal>
+                ))}
+              </section>
+
+              <section className="about-cv__skills" lang="zh-CN">
+                <Reveal className="about-cv__label"><span>02</span><h4>个人技能</h4></Reveal>
+                {[
+                  ['研究与项目', '算法开发 · 实验验证 · 交互工具搭建 · 项目推进与迭代'],
+                  ['视觉与 UI', 'Illustrator · Photoshop · Figma'],
+                  ['编程与计算设计', 'HTML · CSS · JavaScript · Three.js · Python · FastAPI · NumPy · SciPy'],
+                  ['三维建模', '酷家乐 · Rhino · Blender'],
+                  ['影像制作', '剪映 · After Effects · 相机拍摄 · Lightroom'],
+                  ['科研与开发', 'Zotero · Obsidian · Git · GitHub · Visual Studio Code'],
+                  ['AI 与 AR', '阿里云百炼 · Coze 智能体 · KiviCube AR'],
+                ].map(([title, tools], index) => (
+                  <Reveal delay={index * 0.035} className="about-cv__skill" key={title}>
+                    <h5>{title}</h5><p>{tools}</p>
+                  </Reveal>
+                ))}
+              </section>
+            </div>
+          </article>
         </section>
       </main>
 
