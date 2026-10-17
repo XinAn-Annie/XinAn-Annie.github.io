@@ -38,7 +38,7 @@ export const paintingGenomeCase = {
     },
     {
       code: '04', titleZh: '技法分析', titleEn: 'Technique Analysis',
-      src: '/optimized/painting-genome/ability-technique.mp4', poster: '/optimized/painting-genome/ability-technique-poster.jpg',
+      src: '/optimized/painting-genome/technique-analysis-4444.mp4', poster: '/optimized/painting-genome/ability-technique-poster.jpg',
       descriptionZh: '结合画面线索与模型分析展示技法相对倾向，作为学习与鉴赏的辅助信息。',
       descriptionEn: 'Visual cues and model analysis present relative technique tendencies as supporting information for study and appreciation.',
       signal: 'RELATIVE TENDENCY / VISUAL CUES',
