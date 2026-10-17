@@ -1,5 +1,5 @@
 export const dustCase = {
-  headlineZh: '“画尘未尽”古画线上策展',
+  headlineZh: '“画尘未尽”线上策展',
   headlineEn: 'Dust, Still Becoming: An Online Exhibition of Chinese Painting Restoration',
   subheadZh: '古画修复 × 体验交互',
   subheadEn: 'Painting Restoration × Interactive Experience',

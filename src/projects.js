@@ -1,20 +1,23 @@
 import { xiangmaiCase } from './xiangmaiContent.js'
 import { dustCase } from './dustContent.js'
 import { digitalDesignCases } from './digitalDesignContent.js'
+import { hciResearchCases } from './hciResearchContent.js'
+import { paintingGenomeCase } from './paintingGenomeContent.js'
 import { spatialStudies, paintingFrames, photographyFrames, graphicFrames } from './visualPracticeContent.js'
 
 export const filters = ['All', 'Culture × AI', 'HCI Research', 'Digital Product', 'Visual Practice']
 
 export const projects = [
   {
-    id: 'painting-genome', index: '01', year: '2025—NOW', category: 'Culture × AI',
+    id: 'painting-genome', index: '01', year: '2025.06—2026.10', category: 'Culture × AI',
     titleZh: '画基因', titleEn: 'Painting Genome',
-    role: 'Research practice · Tool design', accent: '#751b14', dark: '#262624', art: 'genome',
+    role: 'Independent model training · Backend · Debug', accent: '#aa2c1f', dark: '#211b16', art: 'genome',
     coverVideo: '/media/painting-genome/artgenome-cover.mp4',
-    summaryZh: '面向中国古画学习与分析场景，将色彩提取、题跋检测与识别、技法分析及三维可视化组织为一套轻量化研究工具。',
-    summaryEn: 'A lightweight research tool that connects color extraction, inscription detection, technique analysis and 3D visualization for Chinese painting study.',
-    tags: ['AI-assisted analysis', 'Data visualization', 'Research tool'],
-    chapters: ['Context & opportunity', 'Color extraction', 'Inscription detection', 'Technique analysis', 'Visualization system'],
+    summaryZh: '面向古画学习与研究的多模态智能平台，以色彩、题跋、印章与技法线索组织一次可视、可探索的古画阅读。',
+    summaryEn: 'A multimodal platform that turns color, inscription, seal and technique cues into an explorable reading of historic Chinese paintings.',
+    tags: ['Multimodal AI', 'Visual analysis', 'Research tool'],
+    chapters: ['Visual input', 'Color analysis', 'Inscription text', 'Seal detection', 'Technique analysis'],
+    paintingGenomeCase,
   },
   {
     id: 'xiangmai', index: '02', year: '2025—NOW', category: 'Culture × AI',
@@ -39,7 +42,7 @@ export const projects = [
   {
     id: 'dust-remains', index: '03', year: '2024', category: 'Culture × AI',
     titleZh: '画尘未尽', titleEn: 'Dust, Still Becoming',
-    role: 'Interactive exhibition · AR lead', accent: '#719cff', dark: '#10182c', art: 'dust',
+    role: 'Interactive exhibition · AR lead', accent: '#F0E4D7', dark: '#10182c', art: 'dust',
     coverImage: dustCase.media.cover,
     introductionVideo: dustCase.media.teaser,
     introductionPoster: dustCase.media.teaserPoster,
@@ -52,20 +55,26 @@ export const projects = [
   {
     id: 'millihygro', index: '04', year: '2025—NOW', category: 'HCI Research',
     titleZh: '湿度响应材料界面', titleEn: 'MilliHygro',
-    role: 'Student co-author · CHI 2027 under review', accent: '#70d7c7', dark: '#09221f', art: 'hygro',
-    summaryZh: '围绕湿度响应材料与可编程形变展开的人机交互研究，探索材料如何成为动态界面。',
-    summaryEn: 'An HCI study of humidity-responsive materials and programmable deformation, exploring how matter itself can become an interface.',
+    role: 'CHI 2027 (CCF-A) · Third author · Under review', accent: '#70d7c7', dark: '#09221f', art: 'hygro',
+    coverVideo: '/assets/02/MilliHygro/cover.mp4',
+    introductionVideo: '/assets/02/MilliHygro/introduction.mp4',
+    summaryZh: '微湿度驱动微米材料形变探究，通过材料表征、设计空间与变形库建立设计指南，并以可穿戴原型展示交互可能性。',
+    summaryEn: 'A study of milli-scale, moisture-driven deformation that develops design guidelines through material characterization, a design space, and a deformation library.',
     tags: ['Material HCI', 'Shape-changing interface', 'Research'],
     chapters: ['Research question', 'Material mechanism', 'Design primitives', 'Prototype system', 'Evaluation'],
+    researchCase: hciResearchCases.millihygro,
   },
   {
     id: 'voxel', index: '05', year: '2025—NOW', category: 'HCI Research',
-    titleZh: '体素切片研究', titleEn: 'Voxel Slicer',
-    role: 'Student first author · CHI short paper in preparation', accent: '#9877ff', dark: '#180d30', art: 'voxel',
-    summaryZh: '面向三维体素设计与制造流程的研究工具，探索可视化切片、结构编辑与设计反馈之间的关系。',
-    summaryEn: 'A research tool for voxel-based design and fabrication, connecting visual slicing, structural editing and immediate design feedback.',
+    titleZh: '像素化纸机器人', titleEn: 'PixelFold',
+    role: 'CHI 2027 Poster (CCF-A) · First author · Planned submission', accent: '#9877ff', dark: '#180d30', art: 'voxel',
+    coverVideo: '/assets/02/PixelFold/cover.mp4',
+    introductionVideo: '/assets/02/PixelFold/introduction.mp4',
+    summaryZh: '围绕体素化、展开与交互构建完整设计工具，以加权像素和单张展开结构连接三维模型处理与折纸结果生成。',
+    summaryEn: 'An integrated tool connecting voxelization, single-sheet unfolding, and interaction through weighted pixels for pixelated paper robots.',
     tags: ['3D interaction', 'Fabrication', 'Research tool'],
     chapters: ['Design space', 'Voxel workflow', 'Interaction model', 'Fabrication pipeline', 'Validation'],
+    researchCase: hciResearchCases.pixelfold,
   },
   {
     id: 'little-tiger', index: '06', year: '2026.04 – 2026.05', category: 'Digital Product',
@@ -82,7 +91,7 @@ export const projects = [
   {
     id: 'haoshi', index: '07', year: '', category: 'Digital Product',
     titleZh: '豪氏工厂大探秘H5', titleEn: 'Haoshi Factory Adventure H5',
-    role: '指导老师：郭翀', accent: '#f4d73f', dark: '#2b2306', art: 'factory',
+    role: '浙江省大学生广告大赛三等奖', accent: '#f4d73f', dark: '#2b2306', art: 'factory',
     coverVideo: '/media/digital-design/haoshi/cover-main.mp4',
     introductionVideo: '/media/digital-design/haoshi/video-introduction.mp4',
     digitalCase: digitalDesignCases.haoshi,
@@ -116,7 +125,7 @@ export const projects = [
     id: 'painting-photography', index: '10', year: '2024–2025', category: 'Visual Practice',
     titleZh: '绘画与摄影', titleEn: 'Painting & Photography',
     role: 'Drawing · Portraits · Street · Landscape', accent: '#c7b7a7', dark: '#27211f', art: 'painting',
-    coverImage: paintingFrames[1].src,
+    coverImage: '/media/visual-practice/painting-photography-cover.png',
     summaryZh: '2024–2025 年手绘、人物、街景与风光摄影作品选。',
     summaryEn: 'Selected drawings, portraits, street scenes and landscapes from 2024–2025.',
     tags: ['Drawing', 'Photography'], chapters: [], filmFrames: [...paintingFrames, ...photographyFrames],
@@ -125,7 +134,7 @@ export const projects = [
     id: 'graphic-archive', index: '11', year: '2024–2026', category: 'Visual Practice',
     titleZh: '平面设计', titleEn: 'Graphic Design',
     role: 'Identity · Cultural product · Poster', accent: '#d9aa8b', dark: '#301c19', art: 'graphic',
-    coverImage: graphicFrames[0].src,
+    coverImage: '/media/visual-practice/graphic-design/xiangxi-cover.png',
     summaryZh: '徽标、甲骨文文创、项目展板与社团海报。',
     summaryEn: 'Selected identity, cultural product, exhibition board and poster work.',
     tags: ['Identity', 'Poster', 'Visual communication'], chapters: [], filmFrames: graphicFrames,

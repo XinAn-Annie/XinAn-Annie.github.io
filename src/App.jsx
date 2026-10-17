@@ -12,6 +12,7 @@ import { filters, projects } from './projects.js'
 import optimizedMedia from './optimizedMedia.json'
 
 const ease = [0.22, 1, 0.36, 1]
+const wideProjectIds = new Set(['painting-genome', 'little-tiger', 'spatial'])
 const mediaUrl = (src) => optimizedMedia.videos[src] || optimizedMedia.images[src]?.variants.at(-1)?.src || src
 
 function MediaImage({ src, sizes = '(max-width: 820px) 100vw, 70vw', ...props }) {
@@ -50,6 +51,16 @@ function SplitText({ children, delay = 0 }) {
   )
 }
 
+function InteractiveWord({ children }) {
+  return (
+    <span className="interactive-word" aria-label={children}>
+      {Array.from(children).map((letter, index) => (
+        <span key={`${letter}-${index}`} aria-hidden="true">{letter}</span>
+      ))}
+    </span>
+  )
+}
+
 function Reveal({ children, className = '', delay = 0 }) {
   return (
     <motion.div
@@ -81,8 +92,19 @@ function Artwork({ project, compact = false, variant = 'gallery' }) {
         style={{ '--accent': project.accent, '--dark': project.dark }}
         aria-label={`${project.titleEn} motion cover`}
       >
-        <video src={mediaUrl(project.coverVideo)} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
-        <div className="video-cover__veil" />
+        {project.art === 'factory' ? (
+          <div className="video-cover__phone" aria-hidden="true">
+            <div className="video-cover__screen">
+              <video src={mediaUrl(project.coverVideo)} autoPlay muted loop playsInline preload="metadata" />
+              <div className="video-cover__veil" />
+            </div>
+          </div>
+        ) : (
+          <>
+            <video src={mediaUrl(project.coverVideo)} autoPlay muted loop playsInline preload="metadata" aria-hidden="true" />
+            <div className="video-cover__veil" />
+          </>
+        )}
         <span className="video-cover__index">{project.index}</span>
         <span className="video-cover__label">MOTION COVER / {project.titleEn}</span>
       </div>
@@ -96,7 +118,7 @@ function Artwork({ project, compact = false, variant = 'gallery' }) {
         style={{ '--accent': project.accent, '--dark': project.dark }}
         aria-label={`${project.titleEn} image cover`}
       >
-        <MediaImage src={project.coverImage} sizes="(max-width: 820px) 100vw, 50vw" alt={`${project.titleZh} / ${project.titleEn}`} loading="lazy" />
+        <ResponsivePicture src={project.coverImage} sizes="(max-width: 820px) 100vw, 50vw" alt={`${project.titleZh} / ${project.titleEn}`} loading="lazy" />
         <div className="video-cover__veil" />
         <span className="video-cover__index">{project.index}</span>
         <span className="video-cover__label">COVER / {project.titleEn}</span>
@@ -116,8 +138,8 @@ function Artwork({ project, compact = false, variant = 'gallery' }) {
       <div className="artwork__scan" />
       <span className="artwork__label">IMAGE PLACEHOLDER</span>
       <span className="artwork__number">{project.index}</span>
-      <strong>{project.titleEn}</strong>
-      <span className="artwork__glyph">{project.titleZh.slice(0, 1)}</span>
+      {project.id !== 'spatial' && <strong>{project.titleEn}</strong>}
+      {project.id !== 'spatial' && <span className="artwork__glyph">{project.titleZh.slice(0, 1)}</span>}
     </div>
   )
 }
@@ -216,8 +238,16 @@ function XiangmaiCase({ project }) {
         <div className="xiangmai-two-col"><CaseParagraphs items={content.website.paragraphs} /><BilingualList items={content.website.outputs} /></div>
         <div className="xiangmai-platform-media">
           <ProjectMedia item={project.media[2]} index={0} />
-          <ProjectMedia item={project.media[4]} index={1} />
-          <ProjectMedia item={project.media[1]} index={2} />
+          <div className="xiangmai-website-showcase">
+            <div className="xiangmai-website-stack">
+              <ProjectMedia item={project.media[4]} index={1} />
+              <figure className="xiangmai-function-map">
+                <ResponsivePicture src="/media/xiangmai/xiangmai-website-function-map.png" sizes="(max-width: 820px) 100vw, 46vw" alt="文村网站功能结构图" loading="lazy" />
+                <figcaption><span>WEBSITE FUNCTION MAP</span><Bilingual zh="文村网站功能结构" en="Website function structure" /></figcaption>
+              </figure>
+            </div>
+            <ProjectMedia item={project.media[1]} index={2} />
+          </div>
         </div>
       </section>
 
@@ -417,8 +447,9 @@ function ProjectCard({ project, onOpen, wide }) {
         </div>
         <div className="project-card__head">
           <div className="project-card__title">
-            <h3 lang="zh-CN">{project.titleZh}</h3>
-            <p lang="en">{project.titleEn}</p>
+            <h3 lang="en">{project.titleEn}</h3>
+            <p lang="zh-CN">{project.titleZh}</p>
+            <small lang="en">{project.role}</small>
           </div>
           <span>{project.year}</span>
         </div>
@@ -457,10 +488,10 @@ function DigitalDesignCase({ project }) {
         </div>
       </section>
 
-      <section className="digital-case__section">
+      <section className={`digital-case__section ${['little-tiger', 'skills'].includes(project.id) ? 'digital-case__section--spaced' : ''}`}>
         <span className="section-code">02 / DESIGN POSITION</span>
         <div className="digital-case__two-col">
-          <Bilingual zh={content.insight[0]} en={content.insight[1]} className="digital-case__statement" />
+          <Bilingual zh={content.insight[0]} en={content.insight[1]} />
           <Bilingual zh={content.contribution[0]} en={content.contribution[1]} />
         </div>
       </section>
@@ -474,14 +505,98 @@ function DigitalDesignCase({ project }) {
         </section>
       )}
 
-      <section className="digital-case__section digital-case__framework">
-        <span className="section-code">{content.media.length > 0 ? '04' : '03'} / PROJECT FRAMEWORK</span>
-        <div className="digital-case__framework-row">
-          <Bilingual zh="真实项目材料" en="Verified project materials" />
-          <Bilingual zh="中文叙事" en="Chinese narrative" />
-          <Bilingual zh="英文说明" en="English explanation" />
+    </div>
+  )
+}
+
+function ResearchMediaPlaceholder({ number, labelZh, labelEn, appendNumber = true, cropAspect, accent, dark, src }) {
+  const displayZh = appendNumber ? `${labelZh} ${number}` : labelZh
+  const displayEn = appendNumber ? `${labelEn} ${String(number).padStart(2, '0')}` : labelEn
+  return (
+    <figure className="research-placeholder" style={{ '--accent': accent, '--dark': dark }}>
+      {src ? (
+        <div
+          className={`research-placeholder__canvas research-placeholder__canvas--image ${cropAspect ? 'research-placeholder__canvas--crop' : ''}`}
+          style={cropAspect ? { '--crop-aspect': cropAspect } : undefined}
+        >
+          <ResponsivePicture src={src} sizes="(max-width: 820px) 100vw, 30vw" alt={displayZh} loading="lazy" />
+        </div>
+      ) : (
+        <div className="research-placeholder__canvas" role="img" aria-label={`${displayZh} 占位`}>
+          <span className="research-placeholder__axis research-placeholder__axis--x" />
+          <span className="research-placeholder__axis research-placeholder__axis--y" />
+          <span className="research-placeholder__node research-placeholder__node--a" />
+          <span className="research-placeholder__node research-placeholder__node--b" />
+          <strong>{String(number).padStart(2, '0')}</strong>
+          <small>MEDIA RESERVED</small>
+        </div>
+      )}
+      <figcaption>
+        <span>{String(number).padStart(2, '0')}</span>
+        <Bilingual zh={displayZh} en={displayEn} />
+      </figcaption>
+    </figure>
+  )
+}
+
+function HCIResearchCase({ project }) {
+  const content = project.researchCase
+
+  return (
+    <div className="research-case" style={{ '--research-accent': project.accent, '--research-dark': project.dark }}>
+      <section className="research-case__intro">
+        <span className="section-code">{content.eyebrow}</span>
+        <h3>{content.fullTitle}</h3>
+        <p lang="zh-CN">{content.titleZh}</p>
+        <div className="research-case__credits">
+          {content.credits.map(([labelZh, labelEn, valueZh, valueEn]) => (
+            <article key={`${labelZh}-${valueZh}`}>
+              <Bilingual zh={labelZh} en={labelEn} />
+              <Bilingual zh={valueZh} en={valueEn} />
+            </article>
+          ))}
         </div>
       </section>
+
+      <section className="research-case__narrative">
+        <span className="section-code">02 / RESEARCH OVERVIEW</span>
+        <div className="research-case__copy-grid">
+          <div>
+            <span>研究概述 / OVERVIEW</span>
+            <Bilingual zh={content.overview[0]} en={content.overview[1]} />
+          </div>
+          <div>
+            <span>个人贡献 / CONTRIBUTION</span>
+            <Bilingual zh={content.contribution[0]} en={content.contribution[1]} />
+          </div>
+        </div>
+      </section>
+
+      {content.mediaSections.map((section) => (
+        <section className="research-case__media" key={section.code}>
+          <header>
+            <span className="section-code">{section.code} / {section.titleEn}</span>
+            <div><h3 lang="zh-CN">{section.titleZh}</h3><p>{section.titleEn}</p></div>
+            <Bilingual zh={section.noteZh} en={section.noteEn} />
+          </header>
+          <div className={`research-case__placeholder-grid research-case__placeholder-grid--${section.count}`}>
+            {Array.from({ length: section.count }, (_, index) => (
+              <ResearchMediaPlaceholder
+                key={`${section.code}-${index}`}
+                number={index + 1}
+                labelZh={section.labels?.[index]?.[0] ?? section.labelZh}
+                labelEn={section.labels?.[index]?.[1] ?? section.labelEn}
+                appendNumber={!section.labels?.[index]}
+                cropAspect={index < (section.cropCount ?? 0) ? section.cropAspect : undefined}
+                accent={project.accent}
+                dark={project.dark}
+                src={section.images?.[index]}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+
     </div>
   )
 }
@@ -587,7 +702,7 @@ function GraphicArchive({ project }) {
           <div className="graphic-archive__stage">
             <AnimatePresence mode="wait">
               <motion.figure key={frame.src} initial={{ opacity: 0, y: 28, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -22, scale: .98 }} transition={{ duration: .45, ease }}>
-                <MediaImage src={frame.src} sizes="(max-width: 820px) 90vw, 900px" alt={frame.label} />
+                <ResponsivePicture src={frame.src} sizes="(max-width: 820px) 90vw, 900px" alt={frame.label} />
               </motion.figure>
             </AnimatePresence>
           </div>
@@ -599,6 +714,88 @@ function GraphicArchive({ project }) {
         </div>
       </div>
     </section>
+  )
+}
+
+function PaintingGenomeCase({ project }) {
+  const content = project.paintingGenomeCase
+  const [activeAbility, setActiveAbility] = useState(0)
+  const active = content.abilities[activeAbility]
+
+  const moveLens = (event) => {
+    const bounds = event.currentTarget.getBoundingClientRect()
+    event.currentTarget.style.setProperty('--lens-x', `${((event.clientX - bounds.left) / bounds.width) * 100}%`)
+    event.currentTarget.style.setProperty('--lens-y', `${((event.clientY - bounds.top) / bounds.height) * 100}%`)
+  }
+
+  return (
+    <article className="genome-case">
+      <section className="genome-intro">
+        <div className="genome-intro__statement">
+          <span className="section-code">01 / PROJECT POSITION</span>
+          <Bilingual zh={content.headlineZh} en={content.headlineEn} />
+        </div>
+        <div className="genome-intro__body">
+          <Bilingual zh={content.overviewZh} en={content.overviewEn} />
+          <div className="genome-credits">
+            {content.credits.map((item) => <article key={item.labelEn}><Bilingual zh={item.labelZh} en={item.labelEn} /><Bilingual zh={item.valueZh} en={item.valueEn} /></article>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="genome-lens">
+        <header>
+          <div><span className="section-code">02 / VISUAL ENTRY</span><h3>从一幅画进入多重线索</h3><p>One painting, multiple layers of evidence.</p></div>
+        </header>
+        <div className="genome-lens__stage" onPointerMove={moveLens} tabIndex="0" role="img" aria-label="古画分析镜交互示意，移动指针可探索画面">
+          <img src="/optimized/painting-genome/magnolia-study.webp" width="1440" height="994" alt="枇杷果枝古画排版素材" loading="lazy" />
+          <div className="genome-lens__scan" aria-hidden="true"><span>COLOR</span><span>TEXT</span><span>SEAL</span><span>TECHNIQUE</span></div>
+          <div className="genome-lens__glass" aria-hidden="true"><span>VISUAL<br />EVIDENCE</span></div>
+          <span className="genome-lens__hint">MOVE TO INSPECT / 移动探索</span>
+        </div>
+      </section>
+
+      <section className="genome-pipeline">
+        <span className="section-code">03 / ANALYSIS PIPELINE</span>
+        <div className="genome-pipeline__heading"><h3>看见、解析、关联、再理解。</h3><p>SEE · PARSE · CONNECT · INTERPRET</p></div>
+        <ol>
+          {content.pipeline.map((item) => <li key={item.code}><span>{item.code}</span><strong>{item.zh}</strong><em>{item.en}</em><small>{item.note}</small><MoveRight aria-hidden="true" /></li>)}
+        </ol>
+      </section>
+
+      <section className="genome-abilities">
+        <header>
+          <div><span className="section-code">04 / FOUR ABILITIES</span><h3>四种能力，同一条视觉叙事。</h3></div>
+          <Bilingual zh="选择一个分析维度，观看真实界面片段。视频为网页轻量版本，原始素材保持不变。" en="Choose an analysis dimension to view the interface in motion. These are web-optimized derivatives; the original footage remains unchanged." />
+        </header>
+        <div className="genome-console">
+          <div className="genome-console__tabs" role="tablist" aria-label="画基因功能演示">
+            {content.abilities.map((item, index) => <button
+              key={item.code}
+              type="button"
+              role="tab"
+              aria-selected={activeAbility === index}
+              aria-controls="genome-ability-panel"
+              className={activeAbility === index ? 'genome-console__tab genome-console__tab--active' : 'genome-console__tab'}
+              onClick={() => setActiveAbility(index)}
+            >
+              <span>{item.code}</span><div><strong>{item.titleZh}</strong><small>{item.titleEn}</small></div><MoveRight size={18} />
+            </button>)}
+          </div>
+          <div className="genome-console__panel" id="genome-ability-panel" role="tabpanel">
+            <AnimatePresence mode="wait">
+              <motion.div key={active.src} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: .42, ease }}>
+                <div className="genome-console__screen">
+                  <video src={active.src} poster={active.poster} controls autoPlay muted loop playsInline preload="metadata" />
+                  <span>{active.signal}</span>
+                </div>
+                <div className="genome-console__caption"><span>{active.code} / {active.titleEn.toUpperCase()}</span><Bilingual zh={active.descriptionZh} en={active.descriptionEn} /></div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
+    </article>
   )
 }
 
@@ -640,7 +837,7 @@ function ProjectView({ project, onClose }) {
             </header>
 
             <main className="case__content">
-              {!project.spatialStudies && !project.filmFrames && <section className="case__film" aria-label={project.introductionVideo ? 'Project introduction video' : 'Project introduction video placeholder'}>
+              {!project.spatialStudies && !project.filmFrames && !project.paintingGenomeCase && project.id !== 'skills' && <section className="case__film" aria-label={project.introductionVideo ? 'Project introduction video' : 'Project introduction video placeholder'}>
                 {project.introductionVideo ? (
                   <figure className="case__intro-video">
                     <video src={mediaUrl(project.introductionVideo)} poster={mediaUrl(project.introductionPoster)} controls playsInline preload="metadata" />
@@ -659,7 +856,7 @@ function ProjectView({ project, onClose }) {
                 )}
               </section>}
 
-              {project.spatialStudies ? <SpatialArchive project={project} /> : project.id === 'graphic-archive' ? <GraphicArchive project={project} /> : project.filmFrames ? <FilmArchive project={project} /> : project.id === 'xiangmai' ? <XiangmaiCase project={project} /> : project.id === 'dust-remains' ? <DustCase project={project} /> : project.digitalCase ? <DigitalDesignCase project={project} /> : (
+              {project.spatialStudies ? <SpatialArchive project={project} /> : project.id === 'graphic-archive' ? <GraphicArchive project={project} /> : project.filmFrames ? <FilmArchive project={project} /> : project.paintingGenomeCase ? <PaintingGenomeCase project={project} /> : project.id === 'xiangmai' ? <XiangmaiCase project={project} /> : project.id === 'dust-remains' ? <DustCase project={project} /> : project.digitalCase ? <DigitalDesignCase project={project} /> : project.researchCase ? <HCIResearchCase project={project} /> : (
                 <>
                   <section className="case__overview">
                     <span className="section-code">02 / OVERVIEW</span>
@@ -690,7 +887,10 @@ function ProjectView({ project, onClose }) {
               )}
 
               <section className="case__next">
-                <p>{project.spatialStudies || project.filmFrames ? '继续观看更多作品 / CONTINUE EXPLORING' : project.digitalCase ? '数字设计项目材料 / Digital design project materials' : 'More material will be added as the project archive is prepared.'}</p>
+                <div className="case__next-copy">
+                  <p lang="zh-CN">继续观看更多作品</p>
+                  <p lang="en">CONTINUE EXPLORING</p>
+                </div>
                 <button type="button" onClick={onClose}>BACK TO ALL WORK <ArrowLeft /></button>
               </section>
             </main>
@@ -728,10 +928,10 @@ function App() {
       <header className={`topbar ${menuOpen ? 'topbar--open' : ''}`}>
         <a className="brand" href="#top" onClick={() => setMenuOpen(false)}>AX<span>AN XIN</span></a>
         <nav className={menuOpen ? 'nav nav--open' : 'nav'} aria-label="Primary navigation">
-          <a href="#work" onClick={() => setMenuOpen(false)}>Selected work</a>
-          <a href="#practice" onClick={() => setMenuOpen(false)}>Practice</a>
-          <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
-          <a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a>
+          <a href="#work" onClick={() => setMenuOpen(false)}><span>01</span><span>Selected work</span></a>
+          <a href="#practice" onClick={() => setMenuOpen(false)}><span>02</span><span>Practice</span></a>
+          <a href="#about" onClick={() => setMenuOpen(false)}><span>03</span><span>About</span></a>
+          <a href="#contact" onClick={() => setMenuOpen(false)}><span>04</span><span>Contact</span></a>
         </nav>
         <div className="topbar__meta"><span>HANGZHOU / CN</span><span>2026</span></div>
         <button type="button" className="menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">{menuOpen ? <X /> : <Menu />}</button>
@@ -741,11 +941,7 @@ function App() {
         <section className="hero" id="top">
           <motion.div className="hero__inner" style={{ y: heroY, scale: heroScale }}>
             <div className="hero__note"><span>INTERACTION DESIGNER</span><span>ART & TECHNOLOGY</span></div>
-            <h1>
-              <SplitText>Designing</SplitText>
-              <SplitText delay={0.08}><em>living</em> systems</SplitText>
-              <SplitText delay={0.16}>for culture <i>&</i> people.</SplitText>
-            </h1>
+            <h1 className="hero__title"><SplitText><InteractiveWord>Portfolio</InteractiveWord></SplitText></h1>
             <div className="hero__bottom">
               <p>Exploring how research, visual language and emerging technology can become meaningful human experiences.</p>
               <a className="hero__scroll" href="#work"><span>EXPLORE WORK</span><ArrowDown /></a>
@@ -765,7 +961,7 @@ function App() {
 
         <section className="work section" id="work">
           <Reveal className="section-head">
-            <div><span className="section-code">01 / SELECTED WORK</span><h2>Work as an<br /><em>open process.</em></h2></div>
+            <div><span className="section-code">01 / SELECTED WORK</span><h2>Work as an <em>open process.</em></h2></div>
             <p>Projects move between cultural storytelling, intelligent tools, material research and digital products. Select a case to enter its visual narrative.</p>
           </Reveal>
           <div className="filters" role="group" aria-label="Filter projects">
@@ -773,7 +969,7 @@ function App() {
           </div>
           <motion.div className="project-grid" layout>
             <AnimatePresence mode="popLayout">
-              {visibleProjects.map((project, index) => <motion.div key={project.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ProjectCard project={project} onOpen={setSelectedProject} wide={index % 5 === 0} /></motion.div>)}
+              {visibleProjects.map((project) => <motion.div key={project.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ProjectCard project={project} onOpen={setSelectedProject} wide={wideProjectIds.has(project.id)} /></motion.div>)}
             </AnimatePresence>
           </motion.div>
         </section>
@@ -781,7 +977,7 @@ function App() {
         <section className="practice section" id="practice">
           <Reveal className="practice__intro">
             <span className="section-code">02 / PRACTICE</span>
-            <h2>One practice.<br /><em>Four lenses.</em></h2>
+            <h2>One practice. <em>Four lenses.</em></h2>
           </Reveal>
           <div className="practice__list">
             {[
@@ -791,7 +987,7 @@ function App() {
               ['04', 'Prototypes as questions', '通过可运行的原型不断提问、验证与修正。'],
             ].map(([number, title, text], index) => (
               <motion.article key={title} initial={{ opacity: 0, x: -42 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.75, delay: index * 0.08, ease }}>
-                <span>{number}</span><h3>{title}</h3><p lang="zh-CN">{text}</p><ArrowUpRight />
+                <span>{number}</span><h3>{title}</h3><p lang="zh-CN">{text}</p>
               </motion.article>
             ))}
           </div>
@@ -810,29 +1006,29 @@ function App() {
             </Reveal>
 
             <Reveal delay={0.08} className="about-profile__photo">
-              <img src="/media/about/an-xin-cutout.png" alt="安馨的个人生活照" width="750" height="937" />
+              <img src="/media/about/an-xin-cutout.png" alt="安馨的个人生活照 / Portrait of An Xin" width="750" height="937" />
             </Reveal>
 
-            <Reveal delay={0.12} className="about-profile__intro" lang="zh-CN">
+            <Reveal delay={0.12} className="about-profile__intro">
               <span>PROFILE / 基本信息</span>
-              <h3>艺术与科技学生<br />也是好奇心驱动的设计实践者。</h3>
               <dl>
-                <div><dt>姓名</dt><dd>安馨</dd></div>
-                <div><dt>年龄</dt><dd>20 岁</dd></div>
-                <div><dt>就读</dt><dd>浙江大学艺术与科技</dd></div>
-                <div><dt>辅修</dt><dd>竺可桢学院创新创业管理强化班</dd></div>
+                <div><dt><span lang="zh-CN">姓名</span><small>NAME</small></dt><dd><span lang="zh-CN">安馨</span><small>AN XIN</small></dd></div>
+                <div><dt><span lang="zh-CN">年龄</span><small>AGE</small></dt><dd><span lang="zh-CN">20 岁</span><small>20 YEARS OLD</small></dd></div>
+                <div><dt><span lang="zh-CN">就读</span><small>STUDY</small></dt><dd><span lang="zh-CN">浙江大学</span><small>ZHEJIANG UNIVERSITY</small></dd></div>
+                <div><dt><span lang="zh-CN">主修</span><small>MAJOR</small></dt><dd><span lang="zh-CN">艺术与科技</span><small>ART &amp; TECHNOLOGY</small></dd></div>
+                <div><dt><span lang="zh-CN">辅修</span><small>MINOR</small></dt><dd><span lang="zh-CN">竺可桢学院创新创业管理强化班</span><small>INNOVATION &amp; ENTREPRENEURSHIP MANAGEMENT · CHU KOCHEN HONORS COLLEGE</small></dd></div>
               </dl>
             </Reveal>
 
-            <Reveal delay={0.18} className="about-profile__hobbies" lang="zh-CN">
+            <Reveal delay={0.18} className="about-profile__hobbies">
               <span>OFF THE CLOCK / 兴趣爱好</span>
-              <ul aria-label="兴趣爱好">
-                <li>猫咪脑袋 <i>ฅ^•ﻌ•^ฅ</i></li>
-                <li>摄影</li>
-                <li>旅行</li>
-                <li>爬山</li>
-                <li>骑行</li>
-                <li>热爱生活</li>
+              <ul aria-label="兴趣爱好 / Hobbies">
+                <li><span lang="zh-CN">猫咪脑袋</span><small>CAT PERSON</small><i>ฅ^•ﻌ•^ฅ</i></li>
+                <li><span lang="zh-CN">摄影</span><small>PHOTOGRAPHY</small></li>
+                <li><span lang="zh-CN">旅行</span><small>TRAVEL</small></li>
+                <li><span lang="zh-CN">爬山</span><small>HIKING</small></li>
+                <li><span lang="zh-CN">骑行</span><small>CYCLING</small></li>
+                <li><span lang="zh-CN">热爱生活</span><small>LOVING LIFE</small></li>
               </ul>
             </Reveal>
 
@@ -847,7 +1043,7 @@ function App() {
 
             <Reveal className="about-cv__heading">
               <span>WHAT I’VE EARNED &amp; LEARNED</span>
-              <h3>Honors <em>&amp;</em><br />toolbox.</h3>
+              <h3>Honors <em>&amp;</em> toolbox.</h3>
             </Reveal>
 
             <div className="about-cv__columns">
@@ -890,7 +1086,7 @@ function App() {
 
       <footer className="footer section" id="contact">
         <span className="section-code">04 / CONTACT</span>
-        <h2>Have a question,<br />an idea, or a<br /><em>strange possibility?</em></h2>
+        <h2>Let’s make <em>something memorable.</em></h2>
         <div className="footer__row">
           <p>Let’s turn it into something that can be seen, touched, tested or remembered.</p>
           <a href="https://github.com/XinAn-Annie" target="_blank" rel="noreferrer">GITHUB <Github /></a>

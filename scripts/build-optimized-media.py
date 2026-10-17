@@ -16,11 +16,15 @@ OUTPUT = ROOT / "public" / "optimized"
 MANIFEST = ROOT / "src" / "optimizedMedia.json"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
 WIDTHS = (480, 1600)
+IGNORED_IMAGES = {"an-xin-portrait.jpg"}
 GRAPHIC_WORKS = {
     "slide-07-picture-001.png", "slide-08-picture-001.png",
-    "slide-09-picture-014.png", "slide-09-picture-189.png",
-    "slide-09-picture-211.png", "slide-09-picture-292.png",
+    "xiangxi-board-01.png", "xiangxi-board-02.png", "xiangxi-board-03.png", "xiangxi-cover.png",
     "slide-10-picture-001.png",
+}
+AVIF_IMAGES = {
+    "xiangxi-board-01.png", "xiangxi-board-02.png", "xiangxi-board-03.png", "xiangxi-cover.png",
+    "xiangmai-website-function-map.png",
 }
 Image.MAX_IMAGE_PIXELS = None  # These large, locally supplied works are trusted.
 
@@ -44,6 +48,7 @@ def make_image(source: Path, manifest: dict) -> None:
         original_width, original_height = image.size
         if image.mode not in ("RGB", "RGBA"):
             image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
+        avif_variants = []
         for width in WIDTHS:
             actual_width = min(width, original_width)
             target = target_base.with_name(f"{target_base.name}-{width}.webp")
@@ -59,7 +64,22 @@ def make_image(source: Path, manifest: dict) -> None:
                 "src": "/optimized/" + target.relative_to(OUTPUT).as_posix(),
                 "width": variant_width,
             })
+            if source.name in AVIF_IMAGES:
+                avif_target = target_base.with_name(f"{target_base.name}-{width}.avif")
+                if not avif_target.exists() or avif_target.stat().st_mtime < source.stat().st_mtime:
+                    scaled = image.copy()
+                    scaled.thumbnail((actual_width, max(1, round(original_height * actual_width / original_width))), Image.Resampling.LANCZOS)
+                    scaled.save(avif_target, "AVIF", quality=66)
+                    scaled.close()
+                with Image.open(avif_target) as generated:
+                    avif_width = generated.width
+                avif_variants.append({
+                    "src": "/optimized/" + avif_target.relative_to(OUTPUT).as_posix(),
+                    "width": avif_width,
+                })
     manifest[key] = {"width": original_width, "height": original_height, "variants": variants}
+    if avif_variants:
+        manifest[key]["avifVariants"] = avif_variants
     print(f"image {key}", flush=True)
 
 
@@ -84,16 +104,26 @@ def make_video(source: Path, ffmpeg: str, manifest: dict) -> None:
 
 def main() -> None:
     OUTPUT.mkdir(exist_ok=True)
+    previous = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else {"images": {}}
     images = {}
     videos = {}
     ffmpeg = ffmpeg_binary()
     for source in sorted(SOURCE.rglob("*")):
+        if source.name in IGNORED_IMAGES:
+            continue
         if source.parent.name == "graphic-design" and source.name not in GRAPHIC_WORKS:
             continue
         if source.suffix.lower() in IMAGE_EXTENSIONS:
             make_image(source, images)
         elif source.suffix.lower() == ".mp4":
             make_video(source, ffmpeg, videos)
+    for key, data in images.items():
+        previous_data = previous.get("images", {}).get(key, {})
+        if not data.get("avifVariants") and previous_data.get("avifVariants"):
+            data["avifVariants"] = previous_data["avifVariants"]
+    for key, data in previous.get("images", {}).items():
+        if key not in images and data.get("avifVariants"):
+            images[key] = data
     MANIFEST.write_text(json.dumps({"images": images, "videos": videos}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Finished: {len(images)} images, {len(videos)} videos", flush=True)
 
