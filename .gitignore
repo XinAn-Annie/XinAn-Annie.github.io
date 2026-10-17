@@ -3,3 +3,7 @@ dist/
 .vite/
 *.log
 .DS_Store
+/assets/
+/tmp/
+__pycache__/
+*.pyc

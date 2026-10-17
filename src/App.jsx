@@ -724,8 +724,11 @@ function PaintingGenomeCase({ project }) {
 
   const moveLens = (event) => {
     const bounds = event.currentTarget.getBoundingClientRect()
+    const artwork = event.currentTarget.querySelector('.genome-lens__artwork').getBoundingClientRect()
     event.currentTarget.style.setProperty('--lens-x', `${((event.clientX - bounds.left) / bounds.width) * 100}%`)
     event.currentTarget.style.setProperty('--lens-y', `${((event.clientY - bounds.top) / bounds.height) * 100}%`)
+    event.currentTarget.style.setProperty('--art-x', `${((event.clientX - artwork.left) / artwork.width) * 100}%`)
+    event.currentTarget.style.setProperty('--art-y', `${((event.clientY - artwork.top) / artwork.height) * 100}%`)
   }
 
   return (
@@ -748,8 +751,10 @@ function PaintingGenomeCase({ project }) {
           <div><span className="section-code">02 / VISUAL ENTRY</span><h3>从一幅画进入多重线索</h3><p>One painting, multiple layers of evidence.</p></div>
         </header>
         <div className="genome-lens__stage" onPointerMove={moveLens} tabIndex="0" role="img" aria-label="古画分析镜交互示意，移动指针可探索画面">
-          <img src="/optimized/painting-genome/magnolia-study.webp" width="1440" height="994" alt="枇杷果枝古画排版素材" loading="lazy" />
-          <div className="genome-lens__scan" aria-hidden="true"><span>COLOR</span><span>TEXT</span><span>SEAL</span><span>TECHNIQUE</span></div>
+          <div className="genome-lens__artwork">
+            <img className="genome-lens__base" src="/optimized/painting-genome/magnolia-study.webp" width="1440" height="994" alt="枇杷果枝古画" loading="lazy" />
+            <img className="genome-lens__detail" src="/optimized/painting-genome/group-17.webp" width="5760" height="3976" alt="枇杷果枝古画的分析标注" loading="lazy" />
+          </div>
           <div className="genome-lens__glass" aria-hidden="true"><span>VISUAL<br />EVIDENCE</span></div>
           <span className="genome-lens__hint">MOVE TO INSPECT / 移动探索</span>
         </div>
