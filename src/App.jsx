@@ -488,17 +488,9 @@ function DigitalDesignCase({ project }) {
         </div>
       </section>
 
-      <section className={`digital-case__section ${['little-tiger', 'skills'].includes(project.id) ? 'digital-case__section--spaced' : ''}`}>
-        <span className="section-code">02 / DESIGN POSITION</span>
-        <div className="digital-case__two-col">
-          <Bilingual zh={content.insight[0]} en={content.insight[1]} />
-          <Bilingual zh={content.contribution[0]} en={content.contribution[1]} />
-        </div>
-      </section>
-
       {content.media.length > 0 && (
         <section className="digital-case__section">
-          <span className="section-code">03 / VISUAL STORY</span>
+          <span className="section-code">{['little-tiger', 'skills'].includes(project.id) ? '02' : '03'} / VISUAL STORY</span>
           <div className={`case__media-grid digital-case__media-grid ${project.id === 'haoshi' ? 'digital-case__media-grid--haoshi' : ''}`}>
             {content.media.map((item, index) => <ProjectMedia item={item} index={index} key={item.src} />)}
           </div>
